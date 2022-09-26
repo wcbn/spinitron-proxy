@@ -1,9 +1,7 @@
 # Spinitron proxy server
 
-> We need a proxy in order to meet the terms of service for Spinitron's API:
->
-> Terms of service for Spinitron API
->
+We need a proxy in order to meet the terms of service for Spinitron's API:
+
 > Two rules that we hope you will follow in your use of the Spinitron API can impact design of your app.
 >
 > First, as a client of Spinitron you have an API key that allows access to the API. You may not delegate your access to third parties except for development purposes. In particular, you may not delegate your access to clients of your web or mobile apps. For example, a web or mobile client of yours may fetch data from your servers but they may not use your API key to access the Spinitron API. In other words, don’t build Spinitron API clients into your client scripts or mobile apps.
