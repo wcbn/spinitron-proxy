@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const spinProxyPrefix = "/api/v1/spinitron"
+const spinProxyPrefix = "/api/v1"
 const spinitronBaseURL = "https://spinitron.com/api"
 const port = "8080"
 
