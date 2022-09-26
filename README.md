@@ -30,3 +30,11 @@ curl "localhost:8080/api/spins"
 Feel free to run any of the target in the `Makefile`.
 
 Pro tip: `make logs` will watch the docker logs and can be super helpful!
+
+## Deploy
+
+0. `docker login`
+1. `make build`
+2. `make push`
+3. See new version here: https://hub.docker.com/repository/docker/wcbn/spinitron-proxy
+4. Create new deployment here: https://lightsail.aws.amazon.com/ls/webapp/us-east-2/container-services/spinitron-proxy/deployments
