@@ -13,7 +13,7 @@ This will stop the existing server (if any), rebuild a new one, and run the new 
 At this point, you should be able to make [some requests](https://spinitron.github.io/v2api/)
 
 ```
-curl "localhost:8080/api/v1/spins"
+curl "localhost:8080/api/spins"
 ```
 
 4. If you are done, go to step 5. Otherwise, go to step 2.
