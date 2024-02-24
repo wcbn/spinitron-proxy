@@ -1,6 +1,6 @@
 # Spinitron proxy server
 
-We need a proxy in order to meet the terms of service for Spinitron's API:
+Developers using the Spinitron API must adhere to the following terms of service:
 
 > Two rules that we hope you will follow in your use of the Spinitron API can impact design of your app.
 >
@@ -8,33 +8,40 @@ We need a proxy in order to meet the terms of service for Spinitron's API:
 >
 > Second, you should use a cache in the implementation of your web servers or mobile app back-end servers. For example, say you display part of the program schedule on a certain web page. It’s not ok if for every request of that page from visitors to your site, your server makes a request to the Spinitron API. The program schedule doesn’t change rapidly so you can assume that data you fetched a minute ago is still valid. So you should cache data you fetch from Spinitron for a while in case you need the same info again soon. Cacheing is good for your website visitors (faster page loads), reduces load on your and Spinitron’s servers, reduces Internet traffic (and therefore even reduces energy waste a little). How you implement the cache is up to you. Good cache implementations take into account the specific design of the app and how users are expected to behave.
 
-## Getting Started
+With that in mind, this little server...
 
-1. Run Docker
-2. Make changes to `main.go`
-3. Run `SPINITRON_API_KEY=XXX make start`
+- forwards requests from a client (e.g. a mobile app) to Spinitron with the developer's API key
+- is read-only i.e. it only services GET requests
+- includes an in-memory cache mechanism optimized for https://github.com/dctalbot/spinitron-mobile-app
 
-This will stop the existing server (if any), rebuild a new one, and run the new one.
+## How to deploy
 
-At this point, you should be able to make [some requests](https://spinitron.github.io/v2api/)
+The only prerequisite here is having an API key. Container services are supported by most cloud providers these days. The memory and CPU requirements are extremely minimal.
 
-```
-curl "localhost:8080/api/spins"
-```
+### AWS Lightsail
 
-4. If you are done, go to step 5. Otherwise, go to step 2.
-5. Run `make stop` to turn it off.
+1. Create a new container service (the cheapest option is fine)
+1. Create a new deployment
+1. Set the image to `docker.io/wcbn/spinitron-proxy:latest`
+1. Set an environment variable named `SPINITRON_API_KEY` with the value of your API key
+1. Set the port to 8080, HTTP
+1. Use the container name as the public endpoint
+1. Set the health check to `/`
+1. Save and deploy
 
-## Makefile
+## How to Develop
 
-Feel free to run any of the target in the `Makefile`.
+### Requirements
 
-Pro tip: `make logs` will watch the docker logs and can be super helpful!
+- Go 1.19
 
-## Deploy
+1. Make changes to `main.go`
+1. Run `SPINITRON_API_KEY=XXX go run main.go`
+1. Make [some requests](https://spinitron.github.io/v2api/) e.g. `curl "localhost:8080/api/spins"`
 
-0. `docker login`
+### Release
+
+1. `docker login`
 1. `make build`
-2. `make push`
-3. See new version here: https://hub.docker.com/repository/docker/wcbn/spinitron-proxy
-4. Create new deployment here: https://lightsail.aws.amazon.com/ls/webapp/us-east-2/container-services/spinitron-proxy/deployments
+1. `make push`
+1. See new version here: https://hub.docker.com/repository/docker/wcbn/spinitron-proxy
