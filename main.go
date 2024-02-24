@@ -1,69 +1,55 @@
 package main
 
 import (
-	"io"
-	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
-	"time"
 )
 
-const spinProxyPrefix = "/api"
-const spinitronBaseURL = "https://spinitron.com/api"
-const port = "8080"
+const spinitronBaseURL = "https://spinitron.com"
 
-func spinProxyHandler(w http.ResponseWriter, r *http.Request) {
+type SimpleProxy struct {
+	Proxy *httputil.ReverseProxy
+}
 
-	// API is read-only
-	if r.Method != http.MethodGet {
-		log.Printf("unsupported HTTP method: %s", r.Method)
+func NewProxy(token string) *SimpleProxy {
+	url, _ := url.Parse(spinitronBaseURL)
+	s := &SimpleProxy{httputil.NewSingleHostReverseProxy(url)}
+
+	defaultDirector := s.Proxy.Director
+	s.Proxy.Director = func(req *http.Request) {
+		defaultDirector(req)
+		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("accept", "application/json")
+	}
+
+	return s
+}
+
+func (s *SimpleProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
+	// Only allow GET requests
+	if req.Method != http.MethodGet {
+		rw.WriteHeader(http.StatusNotFound)
+		rw.Write([]byte("404 page not found\n"))
 		return
 	}
 
-	path := r.RequestURI[len(spinProxyPrefix):]
-	client := &http.Client{
-		Timeout: time.Minute,
-	}
-
-	spinReq, err := http.NewRequest(http.MethodGet, spinitronBaseURL+path, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	spinReq.Header = http.Header{
-		"Authorization": {"Bearer " + os.Getenv("SPINITRON_API_KEY")},
-		"accept":        {"application/json"},
-	}
-
-	// API is read-only
-	spinReq.Method = http.MethodGet
-
-	resp, err := client.Do(spinReq)
-	if err != nil {
-		log.Println(err)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-	}
-
-	if resp.StatusCode >= 400 {
-		log.Printf("unexpected status code %d: %s", resp.StatusCode, r.RequestURI)
-	}
-
-	w.WriteHeader(resp.StatusCode)
-	w.Write(data)
+	s.Proxy.ServeHTTP(rw, req)
 }
 
 func main() {
-	if os.Getenv("SPINITRON_API_KEY") == "" {
+	token := os.Getenv("SPINITRON_API_KEY")
+	if token == "" {
 		panic("SPINITRON_API_KEY is empty")
 	}
 
-	http.HandleFunc(spinProxyPrefix+"/", spinProxyHandler)
+	proxy := NewProxy(token)
 
-	err := http.ListenAndServe(":"+port, nil)
+	http.Handle("/api/", proxy)
+
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		panic(err)
 	}
