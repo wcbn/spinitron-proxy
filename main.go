@@ -17,9 +17,9 @@ func NewProxy(token string) *SimpleProxy {
 	url, _ := url.Parse(spinitronBaseURL)
 	s := &SimpleProxy{httputil.NewSingleHostReverseProxy(url)}
 
-	defaultDirector := s.Proxy.Director
+	baseDirector := s.Proxy.Director
 	s.Proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
+		baseDirector(req)
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("accept", "application/json")
 	}
