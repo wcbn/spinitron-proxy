@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -36,8 +35,6 @@ func (t *TransportWithCache) RoundTrip(req *http.Request) (*http.Response, error
 		resp.Header.Set("Content-Type", "application/json")
 		return resp, nil
 	}
-
-	fmt.Println("MISS")
 
 	// Do HTTP fetch from target server
 	resp, err := t.Transport.RoundTrip(req)
