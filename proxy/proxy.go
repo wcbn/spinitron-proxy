@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/wcbn/spinitron-proxy/api"
 	"github.com/wcbn/spinitron-proxy/cache"
 )
 
@@ -18,11 +17,7 @@ type TransportWithCache struct {
 }
 
 func (t *TransportWithCache) RoundTrip(req *http.Request) (*http.Response, error) {
-	key := req.URL.Path
-	if api.IsCollectionPath(key) {
-		key += "?" + req.URL.Query().Encode()
-	}
-
+	key := t.Cache.MakeCacheKey(req)
 	value, found := t.Cache.Get(key)
 
 	if found {

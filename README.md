@@ -14,13 +14,28 @@ With that in mind, this little server...
 - is read-only i.e. it only services GET requests
 - includes an in-memory cache mechanism optimized for https://github.com/dctalbot/spinitron-mobile-app
 
+## Cache strategy
+
+### Individual resources
+
+- When selecting an endpoint with an ID value e.g. `/spins/1`
+- Query parameters are ignored
+- TTL of 3 minutes
+
+### Collections
+
+- When selecting an endpoint that returns a list e.g. `/spins?`, `/spins?page=1`
+- Query parameters are not ignored
+- TTL depends on the collection. See comments in `cache.go` for details
+- Upon expiration, all caches for the same collection are invalidated e.g. When `/spins?page=1` expires, `/spins?page=3` is also invalidated (and vice-versa).
+
 ## How to deploy
 
-The only prerequisite here is having an API key. Container services are supported by most cloud providers these days. The memory and CPU requirements are extremely minimal.
+Container-based services are supported by most cloud providers. The memory and CPU requirements are extremely minimal, so just pick the cheapest option.
 
 ### AWS Lightsail
 
-1. Create a new container service (the cheapest option is fine)
+1. Create a new container service
 1. Create a new deployment
 1. Set the image to `docker.io/wcbn/spinitron-proxy:latest`
 1. Set an environment variable named `SPINITRON_API_KEY` with the value of your API key
@@ -33,7 +48,8 @@ The only prerequisite here is having an API key. Container services are supporte
 
 ### Requirements
 
-- Go 1.19
+- Go (version specified in `go.mod`)
+- Spinitron API key
 
 1. Make changes to `main.go`
 1. Run `SPINITRON_API_KEY=XXX go run main.go`
@@ -43,21 +59,6 @@ The only prerequisite here is having an API key. Container services are supporte
 
 1. `docker login`
 1. `make build`
+1. `SPINITRON_API_KEY=XXX make start`, do some smoke testing e.g. `curl "localhost:8080/api/spins"`
 1. `make push`
 1. See new version here: https://hub.docker.com/repository/docker/wcbn/spinitron-proxy
-
-# Cache strategy
-
-## Individual resources
-
-- Key is a `(collection-name, id)` pair formatted as a URL path string e.g. `"/spins/1"`
-- Value is a `byte[]` JSON document
-- Query parameters are ignored
-- TTL of 3 minutes
-
-## Collections
-
-- Key is the substring of the request URL composed of the path and the query string e.g. `"/spins?page=1"`
-- Value is a `byte[]` JSON document
-- Maximum TTL depends on the collection. See `cache.go` for details.
-- As soon as one cache for a collection expires, all caches for that collection are invalidated e.g. When `/spins?page=1` expires, `/spins?page=3` is also invalidated (and vice-versa).

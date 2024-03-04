@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/Yiling-J/theine-go"
@@ -10,16 +10,6 @@ import (
 
 type Cache struct {
 	tcache *theine.Cache[string, []byte]
-}
-
-func (c *Cache) evictCollection(name string) {
-	c.tcache.Range(func(k string, v []byte) bool {
-		fmt.Println(k, name, api.GetCollectionName(k))
-		if api.GetCollectionName(k) == name {
-			c.tcache.Delete(k)
-		}
-		return true
-	})
 }
 
 func (c *Cache) Init() {
@@ -54,22 +44,41 @@ func (c *Cache) Set(key string, value []byte) bool {
 	return c.tcache.SetWithTTL(key, value, 0, ttl)
 }
 
+func (c *Cache) MakeCacheKey(req *http.Request) string {
+	result := req.URL.Path
+	if api.IsCollectionPath(result) {
+		result += "?" + req.URL.Query().Encode()
+	}
+	return result
+}
+
 // getTTL contains the cache expiration rules for each endpoint
 func getTTL(key string) time.Duration {
 	if api.IsResourcePath(key) {
 		return 3 * time.Minute
 	}
 
-	return 5 * time.Second // for testing TODO remove this line
+	c := api.GetCollectionName(key)
 
-	// c := api.GetCollectionName(key)
+	var ttl = map[string]time.Duration{
+		"personas":  5 * time.Minute,
+		"shows":     5 * time.Minute,
+		"playlists": 3 * time.Minute,
+		"spins":     30 * time.Second,
+	}
 
-	// var ttl = map[string]time.Duration{
-	// 	"personas":  2 * time.Minute,
-	// 	"shows":     2 * time.Minute,
-	// 	"playlists": 2 * time.Minute,
-	// 	"spins":     30 * time.Second,
-	// }
+	return ttl[c]
+}
 
-	// return ttl[c]
+func (c *Cache) evictCollection(name string) {
+	shouldDelete := []string{}
+	c.tcache.Range(func(k string, v []byte) bool {
+		if api.GetCollectionName(k) == name {
+			shouldDelete = append(shouldDelete, k)
+		}
+		return true
+	})
+	for _, key := range shouldDelete {
+		c.tcache.Delete(key)
+	}
 }
