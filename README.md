@@ -50,14 +50,14 @@ The only prerequisite here is having an API key. Container services are supporte
 
 ## Individual resources
 
-- Key is a `(collection-name, id)` pair formatted as a URL path string e.g. `"/persons/1"`
+- Key is a `(collection-name, id)` pair formatted as a URL path string e.g. `"/spins/1"`
 - Value is a `byte[]` JSON document
-- `fields` and `expand` query parameters are ignored
+- Query parameters are ignored
 - TTL of 3 minutes
 
 ## Collections
 
-- Key is the substring of the request URL composed of the path and the query string e.g. `"/persons?page=1"`
+- Key is the substring of the request URL composed of the path and the query string e.g. `"/spins?page=1"`
 - Value is a `byte[]` JSON document
-- Maximum TTL depends on the collection e.g. `/spins` has lower TTL than `/shows`.
-- as soon as one cache for a collection expires, all caches for that collection are invalidated e.g. any keys matching `/persons*` are invalidated when `/persons?page=3` expires
+- Maximum TTL depends on the collection. See `cache.go` for details.
+- As soon as one cache for a collection expires, all caches for that collection are invalidated e.g. When `/spins?page=1` expires, `/spins?page=3` is also invalidated (and vice-versa).
