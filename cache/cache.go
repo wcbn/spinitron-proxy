@@ -1,48 +1,73 @@
 package cache
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/Yiling-J/theine-go"
 	"github.com/wcbn/spinitron-proxy/api"
 )
 
-type CacheStore struct {
-	Cache *theine.Cache[string, []byte]
+type Cache struct {
+	tcache *theine.Cache[string, []byte]
 }
 
-func (cs *CacheStore) Init() {
-	if cs.Cache != nil {
+func (c *Cache) Init() {
+	if c.tcache != nil {
 		return
 	}
 
-	cache, err := theine.NewBuilder[string, []byte](2000).RemovalListener(func(key string, value []byte, reason theine.RemoveReason) {
+	cache, err := theine.NewBuilder[string, []byte](2000).RemovalListener(func(removedKey string, removedValue []byte, reason theine.RemoveReason) {
 
-		if api.IsResourcePath(key) {
-			cs.Cache.Range(func(key string, value []byte) bool {
-				fmt.Println("ranging through cache...")
-				return true
-			})
+		// when a collection path expires
+		if api.IsCollectionPath(removedKey) && reason == theine.EXPIRED {
+
+			// remove all entries for said collection
+			c.InvalidateCollection(api.GetCollectionName(removedKey))
 		}
 
-		// reason could be REMOVED/EVICTED/EXPIRED
-		fmt.Println("Key:", key, "Value:", string(value))
 	}).Build()
 
 	if err != nil {
 		panic(err)
 	}
 
-	cs.Cache = cache
-
+	c.tcache = cache
 }
 
-// func (t *AppTransport) InvalidateCollection(s string) {
+func (c *Cache) Get(key string) ([]byte, bool) {
+	return c.tcache.Get(key)
+}
 
-// 	t.Cache.Range(func(key string, value any) bool {
-// 		if api.IsResourcePath(key) {
-// 			t.Cache.Delete(key)
-// 		}
-// 		return true
-// 	})
-// }
+func (c *Cache) Set(key string, value []byte) bool {
+	ttl := getTTL(key)
+	return c.tcache.SetWithTTL(key, value, 0, ttl)
+}
+
+// getTTL contains the cache expiration rules for each endpoint
+func getTTL(key string) time.Duration {
+	if api.IsResourcePath(key) {
+		return 3 * time.Minute
+	}
+
+	return 5 * time.Second // for testing TODO remove this line
+
+	// c := api.GetCollectionName(key)
+
+	// var ttl = map[string]time.Duration{
+	// 	"personas":  2 * time.Minute,
+	// 	"shows":     2 * time.Minute,
+	// 	"playlists": 2 * time.Minute,
+	// 	"spins":     30 * time.Second,
+	// }
+
+	// return ttl[c]
+}
+
+func (c *Cache) InvalidateCollection(name string) {
+	c.tcache.Range(func(k string, v []byte) bool {
+		if api.GetCollectionName(k) == name {
+			c.tcache.Delete(k)
+		}
+		return true
+	})
+}

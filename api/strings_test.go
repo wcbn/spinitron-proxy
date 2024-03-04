@@ -37,3 +37,24 @@ func TestIsCollectionPath(t *testing.T) {
 		}
 	}
 }
+
+func TestGetCollectionName(t *testing.T) {
+	s := []string{
+		"api/foo",
+		"foo",
+		"/api/foo",
+		"/foo",
+		"/foo/",
+		"/api/foo/",
+		"/foo/",
+		"/api/foo/?bar=baz",
+		"/api/foo?bar=baz",
+	}
+
+	for _, name := range s {
+		result := GetCollectionName(name)
+		if result != "foo" {
+			t.Errorf("GetCollectionName(%s) = %s; want foo", name, result)
+		}
+	}
+}
