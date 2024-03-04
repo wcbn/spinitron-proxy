@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Yiling-J/theine-go"
@@ -11,18 +12,28 @@ type Cache struct {
 	tcache *theine.Cache[string, []byte]
 }
 
+func (c *Cache) evictCollection(name string) {
+	c.tcache.Range(func(k string, v []byte) bool {
+		fmt.Println(k, name, api.GetCollectionName(k))
+		if api.GetCollectionName(k) == name {
+			c.tcache.Delete(k)
+		}
+		return true
+	})
+}
+
 func (c *Cache) Init() {
 	if c.tcache != nil {
 		return
 	}
 
-	cache, err := theine.NewBuilder[string, []byte](2000).RemovalListener(func(removedKey string, removedValue []byte, reason theine.RemoveReason) {
+	cache, err := theine.NewBuilder[string, []byte](2000).RemovalListener(func(k string, v []byte, r theine.RemoveReason) {
 
 		// when a collection path expires
-		if api.IsCollectionPath(removedKey) && reason == theine.EXPIRED {
+		if api.IsCollectionPath(k) && r == theine.EXPIRED {
 
 			// remove all entries for said collection
-			c.InvalidateCollection(api.GetCollectionName(removedKey))
+			c.evictCollection(api.GetCollectionName(k))
 		}
 
 	}).Build()
@@ -61,13 +72,4 @@ func getTTL(key string) time.Duration {
 	// }
 
 	// return ttl[c]
-}
-
-func (c *Cache) InvalidateCollection(name string) {
-	c.tcache.Range(func(k string, v []byte) bool {
-		if api.GetCollectionName(k) == name {
-			c.tcache.Delete(k)
-		}
-		return true
-	})
 }

@@ -14,13 +14,16 @@ func IsResourcePath(path string) bool {
 }
 
 func IsCollectionPath(path string) bool {
+	if IsResourcePath(path) {
+		return false
+	}
 	re, _ := regexp.Compile(`\/api\/\w+.*`)
 	return re.MatchString(path)
 }
 
-func GetCollectionName(pathWithQuery string) string {
+func GetCollectionName(s string) string {
 	dummy := "https://foo.com/"
-	u, _ := url.Parse(dummy + pathWithQuery)
+	u, _ := url.Parse(dummy + s)
 	segments := strings.Split(u.Path, "/")
 
 	for i := range segments {

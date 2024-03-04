@@ -38,6 +38,20 @@ func TestIsCollectionPath(t *testing.T) {
 	}
 }
 
+func TestIsNotCollectionPath(t *testing.T) {
+
+	known := []string{
+		"/api/personas/1",
+	}
+
+	for _, name := range known {
+		result := !IsCollectionPath(name)
+		if !result {
+			t.Errorf("IsCollectionPath(%s) = %t; want true", name, result)
+		}
+	}
+}
+
 func TestGetCollectionName(t *testing.T) {
 	s := []string{
 		"api/foo",
