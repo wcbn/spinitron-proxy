@@ -11,6 +11,7 @@ func TestIsResourcePath(t *testing.T) {
 		"/api/shows/2",
 		"/api/playlists/3",
 		"/api/spins/4",
+		"/images/Persona/16/65/166599-img_profile.225x225.jpg?v=123",
 	}
 
 	for _, name := range known {
@@ -42,6 +43,7 @@ func TestIsNotCollectionPath(t *testing.T) {
 
 	known := []string{
 		"/api/personas/1",
+		"/images/Persona/16/65/166599-img_profile.225x225.jpg?v=123",
 	}
 
 	for _, name := range known {

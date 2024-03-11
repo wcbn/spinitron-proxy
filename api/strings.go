@@ -9,7 +9,7 @@ import (
 // TODO harden these, test for edge cases
 
 func IsResourcePath(path string) bool {
-	re, _ := regexp.Compile(`\/api\/\w+\/\d+.*`)
+	re, _ := regexp.Compile(`\/(api|images)\/\w+\/\d+.*`)
 	return re.MatchString(path)
 }
 

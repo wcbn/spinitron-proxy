@@ -14,6 +14,7 @@ func main() {
 	url, _ := url.Parse(spinitronBaseURL)
 	proxy := proxy.NewReverseProxy(tokenEnvVarName, url)
 	http.Handle("GET /api/", proxy)
+	http.Handle("GET /images/", proxy)
 	err := http.ListenAndServe(":8080", nil)
 	panic(err)
 }
