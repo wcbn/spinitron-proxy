@@ -3,10 +3,12 @@ package proxy
 import (
 	"bytes"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/wcbn/spinitron-proxy/cache"
 )
@@ -32,6 +34,7 @@ func (t *TransportWithCache) RoundTrip(req *http.Request) (*http.Response, error
 	}
 
 	// Do HTTP fetch from target server
+	tick := time.Now()
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		return nil, err
@@ -48,6 +51,8 @@ func (t *TransportWithCache) RoundTrip(req *http.Request) (*http.Response, error
 	}
 	resp.Body.Close()
 	resp.Body = io.NopCloser(bytes.NewReader(data))
+
+	log.Println("request.made", time.Since(tick), key)
 
 	t.Cache.Set(key, data)
 

@@ -1,12 +1,15 @@
 package cache
 
 import (
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/Yiling-J/theine-go"
 	"github.com/wcbn/spinitron-proxy/api"
 )
+
+const MAX_CACHE_SIZE = 2000
 
 type Cache struct {
 	tcache *theine.Cache[string, []byte]
@@ -17,8 +20,7 @@ func (c *Cache) Init() {
 		return
 	}
 
-	cache, err := theine.NewBuilder[string, []byte](2000).RemovalListener(func(k string, v []byte, r theine.RemoveReason) {
-
+	cache, err := theine.NewBuilder[string, []byte](MAX_CACHE_SIZE).RemovalListener(func(k string, v []byte, r theine.RemoveReason) {
 		// when a collection path expires
 		if api.IsCollectionPath(k) && r == theine.EXPIRED {
 
@@ -36,12 +38,17 @@ func (c *Cache) Init() {
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
-	return c.tcache.Get(key)
+	tick := time.Now()
+	x, y := c.tcache.Get(key)
+	log.Println("cache.get", time.Since(tick), key)
+	return x, y
 }
 
 func (c *Cache) Set(key string, value []byte) bool {
-	ttl := getTTL(key)
-	return c.tcache.SetWithTTL(key, value, 0, ttl)
+	tick := time.Now()
+	res := c.tcache.SetWithTTL(key, value, 1, getTTL(key))
+	log.Println("cache.set", time.Since(tick), key)
+	return res
 }
 
 func (c *Cache) MakeCacheKey(req *http.Request) string {
@@ -71,14 +78,16 @@ func getTTL(key string) time.Duration {
 }
 
 func (c *Cache) evictCollection(name string) {
-	shouldDelete := []string{}
+	tick := time.Now()
 	c.tcache.Range(func(k string, v []byte) bool {
 		if api.GetCollectionName(k) == name {
-			shouldDelete = append(shouldDelete, k)
+			go c.tcache.Delete(k)
 		}
 		return true
 	})
-	for _, key := range shouldDelete {
-		c.tcache.Delete(key)
-	}
+	log.Println("cache.evicting", time.Since(tick))
+}
+
+func (c *Cache) Len() int {
+	return c.tcache.Len()
 }
