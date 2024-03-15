@@ -44,6 +44,11 @@ Container-based services are supported by most cloud providers. The memory and C
 1. Set the health check to `/`
 1. Save and deploy
 
+## Related Projects
+
+- https://github.com/dctalbot/react-spinitron
+- https://github.com/dctalbot/spinitron-mobile-app
+
 ## How to Develop
 
 ### Requirements
