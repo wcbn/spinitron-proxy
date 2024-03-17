@@ -14,6 +14,3 @@ start: stop	build
 
 logs:
 	docker logs -f $(CONTAINER_NAME)
-
-push:
-	docker push $(IMAGE_NAME)

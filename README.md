@@ -63,11 +63,3 @@ Container-based services are supported by most cloud providers. The memory and C
 1. Make changes to `main.go`
 1. Run `SPINITRON_API_KEY=XXX go run main.go`
 1. Make [some requests](https://spinitron.github.io/v2api/) e.g. `curl "localhost:8080/api/spins"`
-
-### Release
-
-1. `docker login`
-1. `make build`
-1. `SPINITRON_API_KEY=XXX make start`, do some smoke testing e.g. `curl "localhost:8080/api/spins"`
-1. `make push`
-1. See new version here: https://hub.docker.com/repository/docker/wcbn/spinitron-proxy
