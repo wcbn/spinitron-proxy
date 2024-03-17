@@ -1,0 +1,16 @@
+name: "Publish Image"
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go
+        with:
+          go-version-file: go.mod
+      - uses: actions/checkout
+      - uses: ko-build/setup-ko
+      - run: ko build
