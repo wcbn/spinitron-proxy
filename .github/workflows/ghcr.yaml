@@ -9,9 +9,9 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout
+      - uses: actions/setup-go
         with:
           go-version-file: go.mod
-      - uses: ko-build/setup-ko@v0.6
+      - uses: ko-build/setup-ko
       - run: ko build
