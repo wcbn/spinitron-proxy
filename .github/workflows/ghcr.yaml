@@ -6,11 +6,12 @@ on:
 
 jobs:
   publish:
+    name: Publish
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-      - uses: actions/checkout
-      - uses: ko-build/setup-ko
+      - uses: ko-build/setup-ko@v0.6
       - run: ko build
