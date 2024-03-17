@@ -31,7 +31,7 @@ With that in mind, this little server...
 
 ## How to deploy
 
-This software is distributed as container images which are hosted [on GitHub](https://github.com/wcbn/spinitron-proxy/pkgs/container/spinitron-proxy/versions?filters%5Bversion_type%5D=tagged).
+This software is distributed as container images which are hosted [on GitHub](https://github.com/wcbn/spinitron-proxy/pkgs/container/spinitron-proxy).
 
 The following architectures are supported: `linux/amd64`, `linux/arm/v7`, `linux/arm64`, `linux/ppc64le`, and `linux/s390x`.
 
