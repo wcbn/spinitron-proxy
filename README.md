@@ -31,13 +31,17 @@ With that in mind, this little server...
 
 ## How to deploy
 
+This software is distributed as container images which are hosted [on GitHub](https://github.com/wcbn/spinitron-proxy/pkgs/container/spinitron-proxy/versions?filters%5Bversion_type%5D=tagged).
+
+The following architectures are supported: `linux/amd64`, `linux/arm/v7`, `linux/arm64`, `linux/ppc64le`, and `linux/s390x`.
+
 Container-based services are supported by most cloud providers. The memory and CPU requirements are extremely minimal, so just pick the cheapest option.
 
 ### AWS Lightsail
 
 1. Create a new container service
 1. Create a new deployment
-1. Set the image to `docker.io/wcbn/spinitron-proxy:latest`
+1. Set the image to `ghcr.io/wcbn/spinitron-proxy:latest`
 1. Set an environment variable named `SPINITRON_API_KEY` with the value of your API key
 1. Set the port to 8080, HTTP
 1. Use the container name as the public endpoint
